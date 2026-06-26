@@ -26,7 +26,7 @@ slurm:
 
   env:
     USE_ROCM_AITER_ROPE_BACKEND: "0"
-    WANDB_MODE: "online"
+    WANDB_MODE: "disabled"
     OUTPUT_DIR: "${oc.env:OUTPUT_DIR,./output}"
     APPTAINER_BIND: '"/usr/local/lib/libbnxt_re-rdmav34.so:/usr/lib/x86_64-linux-gnu/libibverbs/libbnxt_re-rdmav34.so,${oc.env:SCRATCH},${oc.env:PWD}"'
     SINGULARITY_BIND: '"/usr/local/lib/libbnxt_re-rdmav34.so:/usr/lib/x86_64-linux-gnu/libibverbs/libbnxt_re-rdmav34.so,${oc.env:SCRATCH},${oc.env:PWD}"'

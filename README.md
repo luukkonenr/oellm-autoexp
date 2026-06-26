@@ -171,6 +171,41 @@ eval results are written to `…_2/eval/<timestamp>/results/<hash>_<ts>.json`.
 Per-cluster env / venv / container prerequisites for both backends are in
 [`docs/bridge_eval_setup.md`](docs/bridge_eval_setup.md).
 
+### Standalone conversion + eval (TensorWave / MI325X)
+
+A lightweight path that operates directly on Megatron-LM run output, separate
+from the `oellm_eval` chain backend above. Everything it needs lives in this
+branch; only the runtime container and the lm-eval Python env are external.
+
+**Prerequisites (external, not in git):**
+
+- vLLM eval container: `/shared_silo/scratch/containers/vllm-dev_preview_releases_v0.20.0_20260422.sif` (override with `IMG=`)
+- lm-eval Python env: `/shared_silo/scratch/shared/tw-dashboard/lm-eval-env-v0.4.11` (override with `LMEVAL_ENV=`)
+- Populated submodules: `git submodule update --init submodules/Megatron-Bridge submodules/lm-evaluation-harness`
+
+**1. Convert Megatron checkpoints to HuggingFace.** Wraps the Megatron-Bridge
+converter (`submodules/Megatron-Bridge/tw-tools/`); submits one SLURM job per
+checkpoint.
+
+```bash
+bash export_megatron_runs_to_hf.sh --latest-only \
+    --run-root output/<run_dir> \
+    --hf-model /shared_silo/scratch/models/Qwen3.5-35B-A3B-Base \
+    --out-base exports/
+# Output: exports/<run_name>/iter_<N>/  (HF model dir)
+# Drop --latest-only to convert every iter_*; --dry-run to preview.
+```
+
+**2. Run lm-eval on the HF exports.** Uses the in-repo lm-eval submodule and
+task YAMLs under `scripts/evals/tasks/`; submits one job per (checkpoint × task
+group).
+
+```bash
+# Point EXPORT_ROOT at your exports/ dir and pick which runs to eval.
+EXPORT_ROOT=exports RUN_FILTER='*' bash scripts/evals/run_evals.sh
+# Results: $SCRATCH/eval_results/  (completed groups are skipped on re-run)
+```
+
 ### Monitoring sessions
 - Every submission drops `<monitoring_state_dir>/<session_id>/<job_id>.json`. Resuming is symmetric:
 ```bash
