@@ -7,6 +7,9 @@ runtime: apptainer
 bind:
   - "/shared_silo/scratch"
   - "${oc.env:PWD}"
+  - "/shared_silo/scratch/dzautner/rocm71_signalpool_fix/libamdhip64.so.7.1-3ad064d:/opt/venv/lib/python3.10/site-packages/torch/lib/libamdhip64.so"
+  - "/shared_silo/scratch/dzautner/rocm71_signalpool_fix/libamdhip64.so.7.1-3ad064d:/opt/venv/lib/python3.10/site-packages/torch/lib/libamdhip64.so.7"
+
 pwd: ${oc.env:PWD}
 env:
   WANDB_MODE: "offline"
